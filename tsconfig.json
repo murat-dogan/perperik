@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "outDir": "./dist",
+        "allowJs": true,
+        "target": "es2017",
+        "module": "commonjs",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "removeComments": true
+    },
+    "include": [
+        "./src/**/*"
+    ],
+    "exclude": [
+        "dist",
+        "node_modules",
+        "**/*.test.ts",
+        "**/*.test.js"
+    ]
+}
