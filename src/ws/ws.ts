@@ -4,6 +4,7 @@ import * as ws from 'ws';
 import { getLogger } from 'log4js';
 import { add2Map } from './client';
 import generateClientName from '../helpers/generate-client-name';
+import { OutgoingMessageWelcome } from './message';
 
 const logger = getLogger('ws');
 
@@ -22,7 +23,18 @@ export function createWSServer(certPath: string, keyPath: string, wsPort: string
 
     wss.on('connection', (socket, req) => {
         logger.debug(`New connection from ${req.socket.remoteAddress}`);
-        add2Map(generateClientName(), socket);
+
+        const clientName = generateClientName();
+        add2Map(clientName, socket);
+
+        // Send client name
+        const msg: OutgoingMessageWelcome = {
+            type: 'welcome',
+            clientName,
+        };
+        socket.send(JSON.stringify(msg), (err) => {
+            if (err) console.log(err);
+        });
     });
 
     wss.on('close', () => {

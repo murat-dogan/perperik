@@ -11,19 +11,20 @@
     "lint": "eslint src/**/*.ts"
   },
   "repository": {
-    "url": "git+https://github.com/perperik/perperik.git",
+    "url": "git+https://github.com/murat-dogan/perperik.git",
     "type": "git"
   },
   "keywords": [
+    "perperik",
     "WebRTC",
     "Signalig Server"
   ],
   "author": "Murat Doğan",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/perperik/perperik/issues"
+    "url": "https://github.com/murat-dogan/perperik/issues"
   },
-  "homepage": "https://github.com/perperik/perperik#readme",
+  "homepage": "https://github.com/murat-dogan/perperik#readme",
   "devDependencies": {
     "@types/node": "^16.11.12",
     "@types/ws": "^8.2.2",
