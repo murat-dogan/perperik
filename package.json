@@ -4,7 +4,7 @@
   "description": "WebRTC Signaling Server",
   "main": "dist/app.js",
   "scripts": {
-    "start":"node dist/app.js",
+    "start": "node dist/app.js",
     "build": "npm run clean & tsc",
     "watch": "tsc --watch",
     "clean": "rm -rf dist/*",
@@ -26,7 +26,6 @@
   "homepage": "https://github.com/perperik/perperik#readme",
   "devDependencies": {
     "@types/node": "^16.11.12",
-    "@types/uuid": "^8.3.3",
     "@types/ws": "^8.2.2",
     "@typescript-eslint/eslint-plugin": "^5.7.0",
     "@typescript-eslint/parser": "^5.7.0",
@@ -40,8 +39,8 @@
     "bufferutil": "^4.0.5",
     "dotenv": "^10.0.0",
     "log4js": "^6.3.0",
+    "nanoid": "^3.1.30",
     "utf-8-validate": "^5.0.7",
-    "uuid": "^8.3.2",
     "ws": "^8.3.0"
   }
 }
