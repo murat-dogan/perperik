@@ -4,6 +4,7 @@ import { IncomingMessage, IncomingMessage2Peer, OutgoingMessage, OutgoingMessage
 import commonErrors from '../error/common-errors';
 import { generateErrorMsg } from '../message/message';
 import { SocketExtended } from '../socket/socket';
+import { consumeMessageSendLimit } from '../rate-limit/rate-limiter';
 
 const logger = getLogger('client');
 
@@ -24,18 +25,21 @@ export function add2Map(id: string, socket: SocketExtended): void {
     registerCallbacks(id, socket);
 }
 
-export function removeFromMap(id: string): void {
-    if (clientMap[id] && clientMap[id].readyState == ws.WebSocket.OPEN) clientMap[id].terminate();
-    delete clientMap[id];
+export function removeFromMap(id: string, uniqueID?: string): void {
+    if (clientMap[id]) {
+        // Check if this is correct id<-->uniqueID
+        // If this is different, it will mean that this is another socket (like on re-connect)
+        if (!uniqueID || clientMap[id].pkUniqueID == uniqueID) {
+            if (clientMap[id].readyState == ws.WebSocket.OPEN) clientMap[id].terminate();
+            delete clientMap[id];
+        }
+    }
 }
 
 function registerCallbacks(id: string, socket: SocketExtended): void {
     socket.on('close', (code) => {
         logger.info(`${id}# Socket closed (code: ${code}) ID: ${socket.pkUniqueID}`);
-
-        // Check if this is correct id<-->uniqueID
-        // If this is different, it will mean that this is another socket (like on re-connect)
-        if (clientMap[id].pkUniqueID == socket.pkUniqueID) removeFromMap(id);
+        removeFromMap(id, socket.pkUniqueID);
     });
 
     socket.on('error', (err) => {
@@ -43,33 +47,46 @@ function registerCallbacks(id: string, socket: SocketExtended): void {
     });
 
     socket.on('message', (data) => {
-        try {
-            const msg: IncomingMessage = JSON.parse(data.toString());
-            if (!msg || !msg.type) {
-                logger.error(`${id}# Wrong message format. Received: ${JSON.stringify(data.toString() || {})}`);
-                return;
-            }
-
-            logger.debug(`${id}# Received: ${JSON.stringify(msg)}`);
-
-            switch (msg.type) {
-                case 'peer-msg':
-                    handlePeerMsg(id, msg as IncomingMessage2Peer);
-                    break;
-
-                default:
-                    logger.error(`${id}# Unknown message type. Received: ${JSON.stringify(data)}`);
-                    return;
-            }
-        } catch (err) {
-            logger.error(
-                `${id}# Error thrown while processing the received message. Received Data: ${JSON.stringify(
-                    data.toString() || {},
-                )} Err:`,
-                err,
-            );
-        }
+        handleMsg(id, data);
     });
+}
+
+function handleMsg(id: string, data: ws.RawData): void {
+    // Check Send Message Rate Limit
+    consumeMessageSendLimit(id)
+        .then(() => {
+            try {
+                const msg: IncomingMessage = JSON.parse(data.toString());
+                if (!msg || !msg.type) {
+                    logger.error(`${id}# Wrong message format. Received: ${JSON.stringify(data.toString() || {})}`);
+                    return;
+                }
+
+                logger.debug(`${id}# Received: ${JSON.stringify(msg)}`);
+
+                switch (msg.type) {
+                    case 'peer-msg':
+                        handlePeerMsg(id, msg as IncomingMessage2Peer);
+                        break;
+
+                    default:
+                        logger.error(`${id}# Unknown message type. Received: ${JSON.stringify(data)}`);
+                        return;
+                }
+            } catch (err) {
+                logger.error(
+                    `${id}# Error thrown while processing the received message. Received Data: ${JSON.stringify(
+                        data.toString() || {},
+                    )} Err:`,
+                    err,
+                );
+            }
+        })
+        .catch(() => {
+            // Rate Limit Exceeded
+            logger.info(`${id}# Message Rate Limit Exceeded. Closing connection...`);
+            sendMessage(id, generateErrorMsg(commonErrors.MESSAGE_RATE_LIMIT_EXCEEDED, id));
+        });
 }
 
 function handlePeerMsg(id: string, msg: IncomingMessage2Peer): void {
@@ -86,7 +103,7 @@ function handlePeerMsg(id: string, msg: IncomingMessage2Peer): void {
     // Check if socket is still open
     if (peer.readyState !== ws.WebSocket.OPEN) {
         logger.error(`${id}# Trying to send peer-msg to ${peerID} but socket does not seem open. Removing ... `);
-        removeFromMap(peerID);
+        removeFromMap(peerID, peer.pkUniqueID);
         sendMessage(id, generateErrorMsg(commonErrors.PEER_SOCKET_NOT_OPEN, peerID));
         return;
     }
@@ -107,7 +124,7 @@ function sendMessage(id: string, msg: OutgoingMessage): void {
             logger.error(`${id}# Error occured while trying to send message. Err:`, err);
             if (peer.readyState !== ws.WebSocket.OPEN) {
                 logger.error(`${id}# Socket does not seem open. Removing ... `);
-                removeFromMap(id);
+                removeFromMap(id, peer.pkUniqueID);
             }
         }
     });

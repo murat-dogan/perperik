@@ -41,6 +41,7 @@
     "dotenv": "^10.0.0",
     "log4js": "^6.3.0",
     "nanoid": "^3.1.30",
+    "rate-limiter-flexible": "^2.3.6",
     "utf-8-validate": "^5.0.7",
     "ws": "^8.3.0"
   }
