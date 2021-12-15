@@ -8,11 +8,6 @@ export interface IncomingMessage2Peer extends IncomingMessage {
     payload: unknown;
 }
 
-export interface IncomingMessage2Server extends IncomingMessage {
-    type: 'server-msg';
-    payload: unknown;
-}
-
 export interface OutgoingMessage {
     type: string;
 }
@@ -33,16 +28,3 @@ export interface OutgoingMessagePeer extends OutgoingMessage {
     peerName: string;
     payload: unknown;
 }
-
-export function generateErrorMsg(errMsg: string, info: string): OutgoingMessageError {
-    return {
-        type: 'server-error',
-        errMsg,
-        info,
-    };
-}
-
-export const commonErrors = {
-    PEER_NOT_ONLINE: 'PEER_NOT_ONLINE',
-    PEER_SOCKET_NOT_OPEN: 'PEER_SOCKET_NOT_OPEN',
-};

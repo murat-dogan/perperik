@@ -2,9 +2,9 @@ import * as https from 'https';
 import { readFileSync } from 'fs';
 import * as ws from 'ws';
 import { getLogger } from 'log4js';
-import { add2Map } from './client';
+import { add2Map } from '../client/client';
 import generateClientName from '../helpers/generate-client-name';
-import { OutgoingMessageWelcome } from './message';
+import { OutgoingMessageWelcome } from '../message/message-types';
 
 const logger = getLogger('ws');
 

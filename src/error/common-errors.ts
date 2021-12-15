@@ -1,0 +1,4 @@
+export default {
+    PEER_NOT_ONLINE: 'PEER_NOT_ONLINE',
+    PEER_SOCKET_NOT_OPEN: 'PEER_SOCKET_NOT_OPEN',
+};

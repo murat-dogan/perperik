@@ -1,16 +1,12 @@
 import * as ws from 'ws';
 import { getLogger } from 'log4js';
-import {
-    commonErrors,
-    generateErrorMsg,
-    IncomingMessage2Peer,
-    IncomingMessage2Server,
-    OutgoingMessage,
-    OutgoingMessagePeer,
-} from './message';
+import { IncomingMessage, IncomingMessage2Peer, OutgoingMessage, OutgoingMessagePeer } from '../message/message-types';
+import commonErrors from '../error/common-errors';
+import { generateErrorMsg } from '../message/message';
 
 const logger = getLogger('client');
 
+// TODO: This could be stored on redis in the future
 const clientMap: { [index: string]: ws } = {};
 
 export function add2Map(name: string, socket: ws): void {
@@ -37,7 +33,7 @@ function registerCallbacks(name: string, socket: ws): void {
 
     socket.on('message', (data) => {
         try {
-            const msg: IncomingMessage2Peer | IncomingMessage2Server = JSON.parse(data.toString());
+            const msg: IncomingMessage = JSON.parse(data.toString());
             if (!msg || !msg.type) {
                 logger.error(`${name}# Wrong message format. Received: ${JSON.stringify(data.toString() || {})}`);
                 return;
@@ -47,10 +43,7 @@ function registerCallbacks(name: string, socket: ws): void {
 
             switch (msg.type) {
                 case 'peer-msg':
-                    handlePeerMsg(name, msg);
-                    break;
-
-                case 'server-msg':
+                    handlePeerMsg(name, msg as IncomingMessage2Peer);
                     break;
 
                 default:
