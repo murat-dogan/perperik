@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import { getLogger } from 'log4js';
 import config from './config';
 import { initLogger } from './logger/logger';
-import { createWSServer } from './ws-server/ws';
+import { createWSServer } from './ws-server/ws-server';
 
 start();
 

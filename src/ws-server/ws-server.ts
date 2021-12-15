@@ -9,10 +9,10 @@ import { OutgoingMessageWelcome } from '../message/message-types';
 import { SocketExtended } from '../socket/socket';
 import generateUniqueID from '../helpers/generate-unique-id';
 
-const logger = getLogger('ws');
+const logger = getLogger('ws-server');
 
 let httpsServer: https.Server = null;
-let wss: ws.Server = null;
+let wsServer: ws.Server = null;
 
 export function createWSServer(certPath: string, keyPath: string, wsPort: string | number): void {
     // create https server
@@ -22,9 +22,9 @@ export function createWSServer(certPath: string, keyPath: string, wsPort: string
     });
 
     // create wss server
-    wss = new ws.WebSocketServer({ server: httpsServer });
+    wsServer = new ws.WebSocketServer({ server: httpsServer });
 
-    wss.on('connection', (socket: SocketExtended, req) => {
+    wsServer.on('connection', (socket: SocketExtended, req) => {
         logger.debug(`New connection from ${req.socket.remoteAddress}`);
         const searchParamsStr = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
         const searchParams = new url.URLSearchParams(searchParamsStr);
@@ -44,15 +44,15 @@ export function createWSServer(certPath: string, keyPath: string, wsPort: string
         });
     });
 
-    wss.on('close', () => {
+    wsServer.on('close', () => {
         logger.info(`WS Closed`);
     });
 
-    wss.on('listening', () => {
+    wsServer.on('listening', () => {
         logger.info(`WS listening on port ${wsPort}`);
     });
 
-    wss.on('error', (err) => {
+    wsServer.on('error', (err) => {
         logger.error(`WS error:`, err);
     });
 
