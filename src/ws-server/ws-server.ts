@@ -37,10 +37,10 @@ export function createWSServer(certPath: string, keyPath: string, wsPort: string
         // Send client name
         const msg: OutgoingMessageWelcome = {
             type: 'welcome',
-            clientName,
+            name: clientName,
         };
         socket.send(JSON.stringify(msg), (err) => {
-            if (err) logger.error(`Error on send. Client: ${clientName} Err:`, err);
+            if (err) logger.error(`Error on send welcome msg. Client: ${clientName} Err:`, err);
         });
     });
 

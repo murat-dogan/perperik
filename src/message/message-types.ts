@@ -14,7 +14,7 @@ export interface OutgoingMessage {
 
 export interface OutgoingMessageWelcome extends OutgoingMessage {
     type: 'welcome';
-    clientName: string;
+    name: string;
 }
 
 export interface OutgoingMessageError extends OutgoingMessage {
