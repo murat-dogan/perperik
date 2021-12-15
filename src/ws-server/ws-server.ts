@@ -5,7 +5,7 @@ import { getLogger } from 'log4js';
 import * as url from 'url';
 import { add2Map } from '../client/client';
 import generateClientID from '../helpers/generate-client-id';
-import { OutgoingMessageWelcome } from '../message/message-types';
+import { Message2ClientWelcome } from '../message/message-types';
 import { SocketExtended } from '../socket/socket';
 import generateUniqueID from '../helpers/generate-unique-id';
 import { consumeNewConnectionByIPLimit } from '../rate-limit/rate-limiter';
@@ -42,7 +42,7 @@ export function createWSServer(certPath: string, keyPath: string, wsPort: string
                 add2Map(clientID, socket);
 
                 // Send welcome msg & assigned client id
-                const msg: OutgoingMessageWelcome = {
+                const msg: Message2ClientWelcome = {
                     type: 'welcome',
                     id: clientID,
                 };

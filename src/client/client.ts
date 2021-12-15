@@ -1,6 +1,6 @@
 import * as ws from 'ws';
 import { getLogger } from 'log4js';
-import { IncomingMessage, IncomingMessage2Peer, OutgoingMessage, OutgoingMessagePeer } from '../message/message-types';
+import { Message2Server, Message2ServerPeer, Message2Client, Message2ClientPeer } from '../message/message-types';
 import commonErrors from '../error/common-errors';
 import { generateErrorMsg } from '../message/message';
 import { SocketExtended } from '../socket/socket';
@@ -56,7 +56,7 @@ function handleMsg(id: string, data: ws.RawData): void {
     consumeMessageSendLimit(id)
         .then(() => {
             try {
-                const msg: IncomingMessage = JSON.parse(data.toString());
+                const msg: Message2Server = JSON.parse(data.toString());
                 if (!msg || !msg.type) {
                     logger.error(`${id}# Wrong message format. Received: ${JSON.stringify(data.toString() || {})}`);
                     return;
@@ -66,7 +66,7 @@ function handleMsg(id: string, data: ws.RawData): void {
 
                 switch (msg.type) {
                     case 'peer-msg':
-                        handlePeerMsg(id, msg as IncomingMessage2Peer);
+                        handlePeerMsg(id, msg as Message2ServerPeer);
                         break;
 
                     default:
@@ -90,7 +90,7 @@ function handleMsg(id: string, data: ws.RawData): void {
         });
 }
 
-function handlePeerMsg(id: string, msg: IncomingMessage2Peer): void {
+function handlePeerMsg(id: string, msg: Message2ServerPeer): void {
     const peerID = msg.peerID;
     const peer = clientMap[peerID];
 
@@ -110,7 +110,7 @@ function handlePeerMsg(id: string, msg: IncomingMessage2Peer): void {
     }
 
     // Send Msg
-    const outMessage: OutgoingMessagePeer = {
+    const outMessage: Message2ClientPeer = {
         type: 'peer-msg',
         peerID: id,
         payload: msg.payload,
@@ -118,7 +118,7 @@ function handlePeerMsg(id: string, msg: IncomingMessage2Peer): void {
     sendMessage(peerID, outMessage);
 }
 
-function sendMessage(id: string, msg: OutgoingMessage): void {
+function sendMessage(id: string, msg: Message2Client): void {
     const peer = clientMap[id];
     peer.send(JSON.stringify(msg), (err) => {
         if (err) {
