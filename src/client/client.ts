@@ -10,60 +10,60 @@ const logger = getLogger('client');
 // TODO: This could be stored on redis in the future
 const clientMap: { [index: string]: SocketExtended } = {};
 
-export function add2Map(name: string, socket: SocketExtended): void {
-    if (clientMap[name]) {
-        // client with that name already exists
-        logger.warn(`${name}# Seems already connected. Disconnecting old one...`);
-        sendMessage(name, generateErrorMsg(commonErrors.NEW_CONN_WITH_SAME_NAME, ''));
-        removeFromMap(name);
+export function add2Map(id: string, socket: SocketExtended): void {
+    if (clientMap[id]) {
+        // client with that id already exists
+        logger.warn(`${id}# Seems already connected. Disconnecting old one...`);
+        sendMessage(id, generateErrorMsg(commonErrors.NEW_CONN_WITH_SAME_ID, ''));
+        removeFromMap(id);
     }
 
-    logger.info(`${name}# New Connection`);
+    logger.info(`${id}# New Connection`);
 
-    clientMap[name] = socket;
-    registerCallbacks(name, socket);
+    clientMap[id] = socket;
+    registerCallbacks(id, socket);
 }
 
-export function removeFromMap(name: string): void {
-    if (clientMap[name] && clientMap[name].readyState == ws.WebSocket.OPEN) clientMap[name].terminate();
-    delete clientMap[name];
+export function removeFromMap(id: string): void {
+    if (clientMap[id] && clientMap[id].readyState == ws.WebSocket.OPEN) clientMap[id].terminate();
+    delete clientMap[id];
 }
 
-function registerCallbacks(name: string, socket: SocketExtended): void {
+function registerCallbacks(id: string, socket: SocketExtended): void {
     socket.on('close', (code) => {
-        logger.info(`${name}# Socket closed (code: ${code}) ID: ${socket.pkUniqueID}`);
+        logger.info(`${id}# Socket closed (code: ${code}) ID: ${socket.pkUniqueID}`);
 
-        // Check if this is correct name<-->uniqueID
+        // Check if this is correct id<-->uniqueID
         // If this is different, it will mean that this is another socket (like on re-connect)
-        if (clientMap[name].pkUniqueID == socket.pkUniqueID) removeFromMap(name);
+        if (clientMap[id].pkUniqueID == socket.pkUniqueID) removeFromMap(id);
     });
 
     socket.on('error', (err) => {
-        logger.error(`${name}# Socket error:`, err);
+        logger.error(`${id}# Socket error:`, err);
     });
 
     socket.on('message', (data) => {
         try {
             const msg: IncomingMessage = JSON.parse(data.toString());
             if (!msg || !msg.type) {
-                logger.error(`${name}# Wrong message format. Received: ${JSON.stringify(data.toString() || {})}`);
+                logger.error(`${id}# Wrong message format. Received: ${JSON.stringify(data.toString() || {})}`);
                 return;
             }
 
-            logger.debug(`${name}# Received: ${JSON.stringify(msg)}`);
+            logger.debug(`${id}# Received: ${JSON.stringify(msg)}`);
 
             switch (msg.type) {
                 case 'peer-msg':
-                    handlePeerMsg(name, msg as IncomingMessage2Peer);
+                    handlePeerMsg(id, msg as IncomingMessage2Peer);
                     break;
 
                 default:
-                    logger.error(`${name}# Unknown message type. Received: ${JSON.stringify(data)}`);
+                    logger.error(`${id}# Unknown message type. Received: ${JSON.stringify(data)}`);
                     return;
             }
         } catch (err) {
             logger.error(
-                `${name}# Error thrown while processing the received message. Received Data: ${JSON.stringify(
+                `${id}# Error thrown while processing the received message. Received Data: ${JSON.stringify(
                     data.toString() || {},
                 )} Err:`,
                 err,
@@ -72,42 +72,42 @@ function registerCallbacks(name: string, socket: SocketExtended): void {
     });
 }
 
-function handlePeerMsg(name: string, msg: IncomingMessage2Peer): void {
-    const peerName = msg.peerName;
-    const peer = clientMap[peerName];
+function handlePeerMsg(id: string, msg: IncomingMessage2Peer): void {
+    const peerID = msg.peerID;
+    const peer = clientMap[peerID];
 
     // Check if peer is online
     if (!peer) {
-        logger.error(`${name}# Trying to send peer-msg to ${peerName} but it does not seem online. `);
-        sendMessage(name, generateErrorMsg(commonErrors.PEER_NOT_ONLINE, peerName));
+        logger.error(`${id}# Trying to send peer-msg to ${peerID} but it does not seem online. `);
+        sendMessage(id, generateErrorMsg(commonErrors.PEER_NOT_ONLINE, peerID));
         return;
     }
 
     // Check if socket is still open
     if (peer.readyState !== ws.WebSocket.OPEN) {
-        logger.error(`${name}# Trying to send peer-msg to ${peerName} but socket does not seem open. Removing ... `);
-        removeFromMap(peerName);
-        sendMessage(name, generateErrorMsg(commonErrors.PEER_SOCKET_NOT_OPEN, peerName));
+        logger.error(`${id}# Trying to send peer-msg to ${peerID} but socket does not seem open. Removing ... `);
+        removeFromMap(peerID);
+        sendMessage(id, generateErrorMsg(commonErrors.PEER_SOCKET_NOT_OPEN, peerID));
         return;
     }
 
     // Send Msg
     const outMessage: OutgoingMessagePeer = {
         type: 'peer-msg',
-        peerName: name,
+        peerID: id,
         payload: msg.payload,
     };
-    sendMessage(peerName, outMessage);
+    sendMessage(peerID, outMessage);
 }
 
-function sendMessage(name: string, msg: OutgoingMessage): void {
-    const peer = clientMap[name];
+function sendMessage(id: string, msg: OutgoingMessage): void {
+    const peer = clientMap[id];
     peer.send(JSON.stringify(msg), (err) => {
         if (err) {
-            logger.error(`${name}# Error occured while trying to send message. Err:`, err);
+            logger.error(`${id}# Error occured while trying to send message. Err:`, err);
             if (peer.readyState !== ws.WebSocket.OPEN) {
-                logger.error(`${name}# Socket does not seem open. Removing ... `);
-                removeFromMap(name);
+                logger.error(`${id}# Socket does not seem open. Removing ... `);
+                removeFromMap(id);
             }
         }
     });

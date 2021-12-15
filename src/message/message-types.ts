@@ -4,7 +4,7 @@ export interface IncomingMessage {
 
 export interface IncomingMessage2Peer extends IncomingMessage {
     type: 'peer-msg';
-    peerName: string;
+    peerID: string;
     payload: unknown;
 }
 
@@ -14,7 +14,7 @@ export interface OutgoingMessage {
 
 export interface OutgoingMessageWelcome extends OutgoingMessage {
     type: 'welcome';
-    name: string;
+    id: string;
 }
 
 export interface OutgoingMessageError extends OutgoingMessage {
@@ -25,6 +25,6 @@ export interface OutgoingMessageError extends OutgoingMessage {
 
 export interface OutgoingMessagePeer extends OutgoingMessage {
     type: 'peer-msg';
-    peerName: string;
+    peerID: string;
     payload: unknown;
 }
