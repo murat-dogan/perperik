@@ -86,6 +86,7 @@ function handleMsg(id: string, data: ws.RawData): void {
             // Rate Limit Exceeded
             logger.info(`${id}# Message Rate Limit Exceeded. Closing connection...`);
             sendMessage(id, generateErrorMsg(commonErrors.MESSAGE_RATE_LIMIT_EXCEEDED, id));
+            removeFromMap(id);
         });
 }
 
