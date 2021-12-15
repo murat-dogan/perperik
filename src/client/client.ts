@@ -1,6 +1,13 @@
 import * as ws from 'ws';
 import { getLogger } from 'log4js';
-import { Message2Server, Message2ServerPeer, Message2Client, Message2ClientPeer } from '../message/message-types';
+import {
+    Message2Server,
+    Message2ServerPeer,
+    Message2Client,
+    Message2ClientPeer,
+    Message2ServerQuery,
+    Message2ClientQuery,
+} from '../message/message-types';
 import commonErrors from '../error/common-errors';
 import { generateErrorMsg } from '../message/message';
 import { SocketExtended } from '../socket/socket';
@@ -36,6 +43,10 @@ export function removeFromMap(id: string, uniqueID?: string): void {
     }
 }
 
+export function isClientOnline(id: string): boolean {
+    return id ? clientMap[id] !== undefined : false;
+}
+
 function registerCallbacks(id: string, socket: SocketExtended): void {
     socket.on('close', (code) => {
         logger.info(`${id}# Socket closed (code: ${code}) ID: ${socket.pkUniqueID}`);
@@ -67,6 +78,10 @@ function handleMsg(id: string, data: ws.RawData): void {
                 switch (msg.type) {
                     case 'peer-msg':
                         handlePeerMsg(id, msg as Message2ServerPeer);
+                        break;
+
+                    case 'server-query':
+                        handleQueryMsg(id, msg as Message2ServerQuery);
                         break;
 
                     default:
@@ -118,7 +133,32 @@ function handlePeerMsg(id: string, msg: Message2ServerPeer): void {
     sendMessage(peerID, outMessage);
 }
 
+function handleQueryMsg(id: string, msg: Message2ServerQuery): void {
+    if (!msg.query) {
+        logger.error(`${id}# No cmd. Received: ${JSON.stringify(msg)}`);
+        return;
+    }
+
+    switch (msg.query) {
+        case 'is-peer-online':
+            const replyMsg: Message2ClientQuery = {
+                type: 'server-query',
+                query: 'is-peer-online',
+                peerID: msg.peerID || '',
+                queryRef: msg.queryRef,
+                result: isClientOnline(msg.peerID),
+            };
+            sendMessage(id, replyMsg);
+            break;
+
+        default:
+            logger.error(`${id}# Unknown cmd type. Received: ${JSON.stringify(msg)}`);
+            return;
+    }
+}
+
 function sendMessage(id: string, msg: Message2Client): void {
+    logger.debug(`${id}# Sending: ${JSON.stringify(msg)}`);
     const peer = clientMap[id];
     peer.send(JSON.stringify(msg), (err) => {
         if (err) {
