@@ -3,13 +3,21 @@ import { getLogger } from 'log4js';
 import { IncomingMessage, IncomingMessage2Peer, OutgoingMessage, OutgoingMessagePeer } from '../message/message-types';
 import commonErrors from '../error/common-errors';
 import { generateErrorMsg } from '../message/message';
+import { SocketExtended } from '../socket/socket';
 
 const logger = getLogger('client');
 
 // TODO: This could be stored on redis in the future
-const clientMap: { [index: string]: ws } = {};
+const clientMap: { [index: string]: SocketExtended } = {};
 
-export function add2Map(name: string, socket: ws): void {
+export function add2Map(name: string, socket: SocketExtended): void {
+    if (clientMap[name]) {
+        // client with that name already exists
+        logger.warn(`${name}# Seems already connected. Disconnecting old one...`);
+        sendMessage(name, generateErrorMsg(commonErrors.NEW_CONN_WITH_SAME_NAME, ''));
+        removeFromMap(name);
+    }
+
     logger.info(`${name}# New Connection`);
 
     clientMap[name] = socket;
@@ -21,10 +29,13 @@ export function removeFromMap(name: string): void {
     delete clientMap[name];
 }
 
-function registerCallbacks(name: string, socket: ws): void {
+function registerCallbacks(name: string, socket: SocketExtended): void {
     socket.on('close', (code) => {
-        logger.info(`${name}# Socket closed (code: ${code})`);
-        removeFromMap(name);
+        logger.info(`${name}# Socket closed (code: ${code}) ID: ${socket.pkUniqueID}`);
+
+        // Check if this is correct name<-->uniqueID
+        // If this is different, it will mean that this is another socket (like on re-connect)
+        if (clientMap[name].pkUniqueID == socket.pkUniqueID) removeFromMap(name);
     });
 
     socket.on('error', (err) => {
