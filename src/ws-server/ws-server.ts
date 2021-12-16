@@ -37,10 +37,24 @@ export function createWSServer(wsPort: string | number): void {
         // Check ip rate limit
         consumeNewConnectionByIPLimit(req.socket.remoteAddress)
             .then(() => {
+                const urlSplitted = req.url.substring(0, req.url.indexOf('?')).split('/');
                 const searchParamsStr = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
                 const searchParams = new url.URLSearchParams(searchParamsStr);
 
-                const clientID = searchParams.get('id') || generateClientID();
+                // Client ID could be set from url or as a query parameter named id
+                // If no client id provided a random one will be generated
+                const clientID =
+                    urlSplitted.length > 1 && urlSplitted[1] // Not empty
+                        ? urlSplitted[1]
+                        : searchParams.get('id') || generateClientID();
+
+                if (clientID.length < 4) {
+                    socket.send(JSON.stringify(generateErrorMsg(commonErrors.ID_MIN_LENGTH_IS_4, clientID)), (err) => {
+                        if (err) logger.error(`Error on send err msg. Err:`, err);
+                    });
+                    return;
+                }
+
                 socket.pkUniqueID = generateUniqueID();
                 socket.pkID = clientID;
                 add2Map(clientID, socket);
