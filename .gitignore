@@ -13,6 +13,7 @@
 .project
 .strong-pm
 .env
+.vscode
 coverage
 node_modules*
 npm-debug.log
