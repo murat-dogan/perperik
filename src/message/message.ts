@@ -2,7 +2,7 @@ import { Message2ClientError } from './message-types';
 
 export function generateErrorMsg(errMsg: string, info: string): Message2ClientError {
     return {
-        type: 'server-error',
+        type: 'pk-server-error',
         errMsg,
         info,
     };

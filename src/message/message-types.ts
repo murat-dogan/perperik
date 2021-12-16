@@ -4,16 +4,16 @@ export interface Message2Server {
 }
 
 export interface Message2ServerPeer extends Message2Server {
-    type: 'peer-msg';
-    peerID: string;
-    payload: unknown;
+    type: string;
+    id: string;
+    // Client can add other properties
 }
 
 export interface Message2ServerQuery extends Message2Server {
-    type: 'server-query';
+    type: 'pk-server-query';
     query: 'is-peer-online';
     queryRef?: string; // Optional query reference
-    peerID: string;
+    id: string;
 }
 
 // Message2Client
@@ -22,26 +22,26 @@ export interface Message2Client {
 }
 
 export interface Message2ClientWelcome extends Message2Client {
-    type: 'welcome';
+    type: 'pk-welcome';
     id: string;
 }
 
 export interface Message2ClientError extends Message2Client {
-    type: 'server-error';
+    type: 'pk-server-error';
     errMsg: string;
     info: string;
 }
 
 export interface Message2ClientPeer extends Message2Client {
-    type: 'peer-msg';
-    peerID: string;
-    payload: unknown;
+    type: string;
+    id: string;
+    // Client can add other properties
 }
 
 export interface Message2ClientQuery extends Message2Client {
-    type: 'server-query';
+    type: 'pk-server-query';
     query: 'is-peer-online';
     queryRef?: string; // Optional query reference
-    peerID: string;
+    id: string;
     result: boolean;
 }

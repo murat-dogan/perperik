@@ -47,7 +47,7 @@ export function createWSServer(wsPort: string | number): void {
 
                 // Send welcome msg & assigned client id
                 const msg: Message2ClientWelcome = {
-                    type: 'welcome',
+                    type: 'pk-welcome',
                     id: clientID,
                 };
                 socket.send(JSON.stringify(msg), (err) => {

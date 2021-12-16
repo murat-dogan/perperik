@@ -76,16 +76,13 @@ function handleMsg(id: string, data: ws.RawData): void {
                 logger.debug(`${id}# Received: ${JSON.stringify(msg)}`);
 
                 switch (msg.type) {
-                    case 'peer-msg':
-                        handlePeerMsg(id, msg as Message2ServerPeer);
-                        break;
-
-                    case 'server-query':
+                    case 'pk-server-query':
                         handleQueryMsg(id, msg as Message2ServerQuery);
                         break;
 
                     default:
-                        logger.error(`${id}# Unknown message type. Received: ${JSON.stringify(data)}`);
+                        // If it is not for me than it's for other peer
+                        handlePeerMsg(id, msg as Message2ServerPeer);
                         return;
                 }
             } catch (err) {
@@ -106,7 +103,13 @@ function handleMsg(id: string, data: ws.RawData): void {
 }
 
 function handlePeerMsg(id: string, msg: Message2ServerPeer): void {
-    const peerID = msg.peerID;
+    if (!msg || !msg.id) {
+        logger.error(`${id}# Trying to send peer-msg but id is not valid. Received: ${JSON.stringify(msg)} `);
+        sendMessage(id, generateErrorMsg(commonErrors.PEER_ID_NOT_VALID, ''));
+        return;
+    }
+
+    const peerID = msg.id;
     const peer = clientMap[peerID];
 
     // Check if peer is online
@@ -125,11 +128,7 @@ function handlePeerMsg(id: string, msg: Message2ServerPeer): void {
     }
 
     // Send Msg
-    const outMessage: Message2ClientPeer = {
-        type: 'peer-msg',
-        peerID: id,
-        payload: msg.payload,
-    };
+    const outMessage: Message2ClientPeer = Object.assign(msg, { id });
     sendMessage(peerID, outMessage);
 }
 
@@ -142,11 +141,11 @@ function handleQueryMsg(id: string, msg: Message2ServerQuery): void {
     switch (msg.query) {
         case 'is-peer-online':
             const replyMsg: Message2ClientQuery = {
-                type: 'server-query',
+                type: 'pk-server-query',
                 query: 'is-peer-online',
-                peerID: msg.peerID || '',
+                id: msg.id || '',
                 queryRef: msg.queryRef,
-                result: isClientOnline(msg.peerID),
+                result: isClientOnline(msg.id),
             };
             sendMessage(id, replyMsg);
             break;
