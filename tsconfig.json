@@ -6,7 +6,8 @@
         "module": "commonjs",
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-        "removeComments": true
+        "removeComments": true,
+        "resolveJsonModule": true
     },
     "include": [
         "./src/**/*"
