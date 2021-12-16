@@ -1,5 +1,4 @@
-import * as https from 'https';
-import { readFileSync } from 'fs';
+import * as http from 'http';
 import * as ws from 'ws';
 import { getLogger } from 'log4js';
 import * as url from 'url';
@@ -14,18 +13,23 @@ import commonErrors from '../error/common-errors';
 
 const logger = getLogger('ws-server');
 
-let httpsServer: https.Server = null;
+let httpServer: http.Server = null;
 let wsServer: ws.Server = null;
 
-export function createWSServer(certPath: string, keyPath: string, wsPort: string | number): void {
+export function createWSServer(wsPort: string | number): void {
     // create https server
-    httpsServer = https.createServer({
-        cert: readFileSync(certPath),
-        key: readFileSync(keyPath),
+    httpServer = http.createServer((req, res) => {
+        res.writeHead(404, {
+            'Content-Type': 'text/plain',
+            'Access-Control-Allow-Origin': '*',
+        });
+        res.end(
+            'This is an instance of perperik signaling server. Please check https://github.com/murat-dogan/perperik for details',
+        );
     });
 
     // create wss server
-    wsServer = new ws.WebSocketServer({ server: httpsServer });
+    wsServer = new ws.WebSocketServer({ server: httpServer });
 
     wsServer.on('connection', (socket: SocketExtended, req) => {
         logger.debug(`New connection attempt from ${req.socket.remoteAddress}`);
@@ -76,5 +80,5 @@ export function createWSServer(certPath: string, keyPath: string, wsPort: string
         logger.error(`WS error:`, err);
     });
 
-    httpsServer.listen(wsPort);
+    httpServer.listen(wsPort);
 }

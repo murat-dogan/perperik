@@ -18,5 +18,5 @@ function start(): void {
     logger.info('Starting ...');
 
     // start ws server
-    createWSServer(config.certPath, config.keyPath, config.wsPort);
+    createWSServer(config.wsPort);
 }
