@@ -10,7 +10,6 @@ import generateUniqueID from '../helpers/generate-unique-id';
 import { consumeNewConnectionByIPLimit } from '../rate-limit/rate-limiter';
 import { generateErrorMsg } from '../message/message';
 import commonErrors from '../error/common-errors';
-import * as pkg from '../../package.json';
 
 const logger = getLogger('ws-server');
 
@@ -25,7 +24,7 @@ export function createWSServer(wsPort: string | number): void {
             'Access-Control-Allow-Origin': '*',
         });
         res.end(
-            `This is an instance of perperik signaling server. Please check https://github.com/murat-dogan/perperik for details (V${pkg.version})`,
+            `This is an instance of perperik signaling server. Please check https://github.com/murat-dogan/perperik for details `,
         );
     });
 
