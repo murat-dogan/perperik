@@ -16,4 +16,4 @@
 
  Easy to use client library for NodeJS. 
  
- Please check [perperik-client project page](https://github.com/murat-dogan/perperik-client) for details.
+ Please check [perperik-client](https://github.com/murat-dogan/perperik-client) project page for details.
