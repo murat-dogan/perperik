@@ -10,7 +10,10 @@
 
  # Public Instance
 
- You can use and test running instance of the server from address `ws://perperik.fly.dev:80` (Non TLS) or `wss://perperik.fly.dev:443` (TLS)
+ You can use and test running instance of the server from addresses below;
+ 
+ - `ws://perperik.fly.dev:80` (Non TLS)
+ - `wss://perperik.fly.dev:443` (TLS)
 
 # Rate Limits
 
