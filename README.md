@@ -1,4 +1,4 @@
-# What is `perperik` ?
+# What is `perperik` ![logo](https://github.com/murat-dogan/perperik/raw/main/image/logo_64.png) ?
 
 `perperik` is a signaling server that could be useful especially for WebRTC clients.
 
