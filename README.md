@@ -10,7 +10,7 @@
 
  # Running Instance
 
- You can use and test running instance of the server from address `ws://perperik.fly.dev:80` or `ws://perperik.fly.dev:443`
+ You can use and test running instance of the server from address `ws://perperik.fly.dev:80` or `wss://perperik.fly.dev:443`
 
  # perperik-client
 
