@@ -19,7 +19,7 @@
 
  In order to prevent abuse usement, rate limit applied as follows;
 
--  **New Connection Limit per IP** : New connections is limited per IP basis. (Default 60 connection/minute, can be changed by using IP_RATE_LIMIT_POINTS enviroment variable)
+-  **New Connection Limit per IP** : New connections is limited per IP basis. (Default 10 connection/minute, can be changed by using IP_RATE_LIMIT_POINTS enviroment variable)
 
 -  **Send Message Limit per ID**   : Sent message counts is limited per ID basis. (Default 60 messages/minute, can be changed by using MSG_RATE_LIMIT_POINTS enviroment variable)
 
@@ -33,6 +33,7 @@
 git clone https://github.com/murat-dogan/perperik.git
 cd perperik
 npm i
+pm run build
 npm run start
 ```
 
