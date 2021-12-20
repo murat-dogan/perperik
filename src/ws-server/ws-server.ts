@@ -24,7 +24,7 @@ export function createWSServer(wsPort: string | number): void {
             'Access-Control-Allow-Origin': '*',
         });
         res.end(
-            `This is an instance of perperik signaling server. Please check https://github.com/murat-dogan/perperik for details `,
+            `This is an instance of perperik signaling server. Please check <a href="https://github.com/murat-dogan/perperik">https://github.com/murat-dogan/perperik</a> for details `,
         );
     });
 
