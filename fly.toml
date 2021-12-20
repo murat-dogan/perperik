@@ -1,4 +1,6 @@
-# fly.toml file generated for perperik on 2021-12-15T22:37:24+03:00
+# 
+# For always being on free tier use;
+# flyctl scale count 1
 
 app = "perperik"
 
